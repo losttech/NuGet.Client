@@ -410,16 +410,13 @@ namespace NuGet.SolutionRestoreManager
         /// </remarks>
         private async Task<int> GetMSBuildOutputVerbositySettingAsync()
         {
-            await _taskFactory.SwitchToMainThreadAsync();
-
             var dte = await _asyncServiceProvider.GetDTEAsync();
-
-            var properties = dte.DTE.get_Properties("Environment", "ProjectsAndSolution");
-            var value = properties.Item("MSBuildOutputVerbosity").Value;
+            var value = await dte.GetPropertyValueAsync("Environment", "ProjectsAndSolution", "MSBuildOutputVerbosity");
             if (value is int)
             {
                 return (int)value;
             }
+
             return 0;
         }
 

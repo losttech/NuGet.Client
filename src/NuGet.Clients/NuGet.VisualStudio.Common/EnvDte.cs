@@ -57,5 +57,17 @@ namespace NuGet.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             return _dte.Edition + "/" + _dte.Version;
         }
+
+        /// <summary> Get property value. </summary>
+        /// <param name="category"> Property category. </param>
+        /// <param name="page"> Property page. </param>
+        /// <param name="propertyName">Property name. </param>
+        /// <returns> Property value. </returns>
+        public async Task<object> GetPropertyValueAsync(string category, string page, string name)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var properties = _dte.get_Properties(category, page);
+            return properties.Item(name).Value;
+        }
     }
 }

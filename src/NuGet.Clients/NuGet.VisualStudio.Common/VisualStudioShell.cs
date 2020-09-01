@@ -44,11 +44,8 @@ namespace NuGet.VisualStudio.Common
 
         async Task<object> IVisualStudioShell.GetPropertyValueAsync(string category, string page, string propertyName)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             var dte = await _dte.GetValueAsync();
-            var properties = dte.DTE.get_Properties(category, page);
-            return properties.Item(propertyName).Value;
+            return await dte.GetPropertyValueAsync(category, page, propertyName);
         }
     }
 }
