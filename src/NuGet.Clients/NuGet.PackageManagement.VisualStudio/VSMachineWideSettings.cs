@@ -3,7 +3,6 @@
 
 using System;
 using System.ComponentModel.Composition;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
@@ -24,24 +23,21 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             _settings = new AsyncLazy<Configuration.ISettings>(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            {
+                var baseDirectory = Common.NuGetEnvironment.GetFolderPath(
+                    Common.NuGetFolderPath.MachineWideConfigDirectory);
 
-                    var baseDirectory = Common.NuGetEnvironment.GetFolderPath(
-                        Common.NuGetFolderPath.MachineWideConfigDirectory);
+                var dte = await _asyncServiceProvider.GetDTEAsync();
+                var version = await dte.GetVersionAsync();
+                var sku = await dte.GetSkuAsync();
 
-                    var dte = await _asyncServiceProvider.GetDTEAsync();
-                    var version = dte.Version;
-                    var sku = dte.GetSKU();
-
-                    await TaskScheduler.Default;
-                    return Configuration.Settings.LoadMachineWideSettings(
-                        baseDirectory,
-                        "VisualStudio",
-                        version,
-                        sku);
-                },
-                ThreadHelper.JoinableTaskFactory);
+                return Configuration.Settings.LoadMachineWideSettings(
+                    baseDirectory,
+                    "VisualStudio",
+                    version,
+                    sku);
+            },
+            ThreadHelper.JoinableTaskFactory);
         }
 
         public Configuration.ISettings Settings => NuGetUIThreadHelper.JoinableTaskFactory.Run(_settings.GetValueAsync);

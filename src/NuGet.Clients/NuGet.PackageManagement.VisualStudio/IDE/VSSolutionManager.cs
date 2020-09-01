@@ -174,7 +174,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsSolution = await _asyncServiceProvider.GetServiceAsync<SVsSolution, IVsSolution>();
             var dte = await _asyncServiceProvider.GetDTEAsync();
             UserAgent.SetUserAgentString(
-                    new UserAgentStringBuilder(VSNuGetClientName).WithVisualStudioSKU(dte.GetFullVsVersionString()));
+                    new UserAgentStringBuilder(VSNuGetClientName).WithVisualStudioSKU(await dte.GetFullVsVersionStringAsync()));
 
             HttpHandlerResourceV3.CredentialService = new Lazy<ICredentialService>(() =>
             {
@@ -196,7 +196,7 @@ namespace NuGet.PackageManagement.VisualStudio
             ErrorHandler.ThrowOnFailure(hr);
 
             // Keep a reference to SolutionEvents so that it doesn't get GC'ed. Otherwise, we won't receive events.
-            _solutionEvents = dte.Events.SolutionEvents;
+            _solutionEvents = dte.DTE.Events.SolutionEvents;
             _solutionEvents.BeforeClosing += OnBeforeClosing;
             _solutionEvents.AfterClosing += OnAfterClosing;
             _solutionEvents.ProjectAdded += OnEnvDTEProjectAdded;
@@ -207,8 +207,8 @@ namespace NuGet.PackageManagement.VisualStudio
             var solutionSaveID = (int)VSConstants.VSStd97CmdID.SaveSolution;
             var solutionSaveAsID = (int)VSConstants.VSStd97CmdID.SaveSolutionAs;
 
-            _solutionSaveEvent = dte.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveID];
-            _solutionSaveAsEvent = dte.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveAsID];
+            _solutionSaveEvent = dte.DTE.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveID];
+            _solutionSaveAsEvent = dte.DTE.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveAsID];
 
             _solutionSaveEvent.BeforeExecute += SolutionSaveAs_BeforeExecute;
             _solutionSaveEvent.AfterExecute += SolutionSaveAs_AfterExecute;
@@ -317,8 +317,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var dte = await _asyncServiceProvider.GetDTEAsync();
             return dte != null &&
-                   dte.Solution != null &&
-                   dte.Solution.IsOpen;
+                   dte.DTE.Solution != null &&
+                   dte.DTE.Solution.IsOpen;
         }
 
         public async Task<bool> IsSolutionAvailableAsync()
@@ -366,7 +366,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // first check with DTE, and if we find any supported project, then return immediately.
             var dte = await _asyncServiceProvider.GetDTEAsync();
 
-            var isSupported = EnvDTESolutionUtility.GetAllEnvDTEProjects(dte)
+            var isSupported = EnvDTESolutionUtility.GetAllEnvDTEProjects(dte.DTE)
                 .Where(EnvDTEProjectUtility.IsSupported)
                 .Any();
 
@@ -420,7 +420,7 @@ namespace NuGet.PackageManagement.VisualStudio
             string solutionFilePath = null;
 
             var dte = await _asyncServiceProvider.GetDTEAsync();
-            var property = dte.Solution.Properties.Item("Path");
+            var property = dte.DTE.Solution.Properties.Item("Path");
             if (property == null)
             {
                 return null;
@@ -625,7 +625,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // when a new solution opens, we set its startup project as the default project in NuGet Console
                 var dte = await _asyncServiceProvider.GetDTEAsync();
-                var solutionBuild = dte.Solution.SolutionBuild as SolutionBuild2;
+                var solutionBuild = dte.DTE.Solution.SolutionBuild as SolutionBuild2;
                 startupProjects = solutionBuild?.StartupProjects as IEnumerable<object>;
             }
             catch (COMException)
@@ -659,7 +659,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         var dte = await _asyncServiceProvider.GetDTEAsync();
 
                         var supportedProjects = EnvDTESolutionUtility
-                            .GetAllEnvDTEProjects(dte)
+                            .GetAllEnvDTEProjects(dte.DTE)
                             .Where(EnvDTEProjectUtility.IsSupported);
 
                         foreach (var project in supportedProjects)
@@ -771,7 +771,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     await InitializeAsync();
 
                     var dte = await _asyncServiceProvider.GetDTEAsync();
-                    if (dte.Solution.IsOpen)
+                    if (dte.DTE.Solution.IsOpen)
                     {
                         await OnSolutionExistsAndFullyLoadedAsync();
                     }

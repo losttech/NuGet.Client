@@ -31,10 +31,9 @@ namespace NuGet.VisualStudio
             return serviceProvider.GetService(typeof(TService)) as TService;
         }
 
-        public static Task<EnvDTE.DTE> GetDTEAsync(
-            this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site)
+        public static async Task<EnvDte> GetDTEAsync(this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site)
         {
-            return site.GetServiceAsync<SDTE, EnvDTE.DTE>();
+            return new EnvDte(await site.GetServiceAsync<SDTE, EnvDTE.DTE>());
         }
 
         public static Task<IComponentModel> GetComponentModelAsync(

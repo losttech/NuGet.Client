@@ -414,7 +414,7 @@ namespace NuGet.SolutionRestoreManager
 
             var dte = await _asyncServiceProvider.GetDTEAsync();
 
-            var properties = dte.get_Properties("Environment", "ProjectsAndSolution");
+            var properties = dte.DTE.get_Properties("Environment", "ProjectsAndSolution");
             var value = properties.Item("MSBuildOutputVerbosity").Value;
             if (value is int)
             {

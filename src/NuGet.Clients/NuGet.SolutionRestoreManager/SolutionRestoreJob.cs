@@ -669,7 +669,7 @@ namespace NuGet.SolutionRestoreManager
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var dte = await _asyncServiceProvider.GetDTEAsync();
-                var projects = dte.Solution.Projects;
+                var projects = dte.DTE.Solution.Projects;
                 return projects
                     .OfType<EnvDTE.Project>()
                     .Select(p => new ProjectInfo(EnvDTEProjectInfoUtility.GetFullPath(p), p.Name))

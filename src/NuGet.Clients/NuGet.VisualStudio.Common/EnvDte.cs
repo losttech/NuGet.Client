@@ -2,17 +2,42 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.VisualStudio.Shell;
+using System.Threading.Tasks;
+using EnvDTE;
 
 namespace NuGet.VisualStudio
 {
-    public static class EnvDTEExtensions
+    /// <summary> Wrapper around <see cref="DTE"/> class. </summary>
+    public class EnvDte
     {
-        public static string GetSKU(this EnvDTE.DTE dte)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
+        private readonly DTE _dte;
 
-            var sku = dte.Edition;
+        /// <summary> Create a new instance of <see cref="EnvDte"/>. </summary>
+        /// <param name="dte"> DTE object to wrap. </param>
+        public EnvDte(DTE dte)
+        {
+            _dte = dte;
+        }
+
+        /// <summary> Underlying <see cref="DTE"/> object. </summary>
+        /// <remarks> Temporary until refactoring is finished. </remarks>
+        public DTE DTE => _dte;
+
+        /// <summary> Get DTE version. </summary>
+        /// <returns> DTE version. </returns>
+        public async Task<string> GetVersionAsync()
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            return _dte.Version;
+        }
+
+        /// <summary> Get Visual Studio SKU. </summary>
+        /// <returns> Name of Visual Studio SKU. </returns>
+        public async Task<string> GetSkuAsync()
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var sku = _dte.Edition;
             if (sku.Equals("Ultimate", StringComparison.OrdinalIgnoreCase)
                 ||
                 sku.Equals("Premium", StringComparison.OrdinalIgnoreCase)
@@ -25,11 +50,12 @@ namespace NuGet.VisualStudio
             return sku;
         }
 
-        public static string GetFullVsVersionString(this EnvDTE.DTE dte)
+        /// <summary> Get full Visual Studio version. </summary>
+        /// <returns> Full Visual Studio version. </returns>
+        public async Task<string> GetFullVsVersionStringAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            return dte.Edition + "/" + dte.Version;
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            return _dte.Edition + "/" + _dte.Version;
         }
     }
 }

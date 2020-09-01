@@ -165,7 +165,7 @@ namespace NuGet.SolutionRestoreManager
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     var dte = await _asyncServiceProvider.GetDTEAsync();
-                    _solutionEvents = dte.Events.SolutionEvents;
+                    _solutionEvents = dte.DTE.Events.SolutionEvents;
                     _solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
                     _solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
 

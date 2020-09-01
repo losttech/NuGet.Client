@@ -180,7 +180,7 @@ namespace NuGet.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dte = await _asyncServiceprovider.GetDTEAsync();
-            IEnumerable<Project> supportedProjects = await GetProjectsInSolutionAsync(dte);
+            IEnumerable<Project> supportedProjects = await GetProjectsInSolutionAsync(dte.DTE);
 
             foreach (Project solutionProject in supportedProjects)
             {
